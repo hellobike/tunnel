@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- copy from sprint boot -->
+<Configuration status="warn" shutdownHook="disable">
+    <Properties>
+        <Property name="PID">????</Property>
+        <Property name="LOG_LEVEL_PATTERN">%5p</Property>
+        <Property name="CONSOLE_LOG_PATTERN">[%d{yyyy-MM-dd HH:mm:ss.SSS}] [${LOG_LEVEL_PATTERN}] [%20.20t] [%-40.40c{1.}] %m%n</Property>
+        <Property name="LOG_HOME">logs</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${sys:CONSOLE_LOG_PATTERN}"/>
+        </Console>
+        <File name="LogFile" fileName="logs/tunnel.log">
+            <ThresholdFilter level="error" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout>
+                <Pattern>${sys:CONSOLE_LOG_PATTERN}</Pattern>
+            </PatternLayout>
+        </File>
+        <Async name="Async" BufferSize="65536">
+            <AppenderRef ref="LogFile"/>
+        </Async>
+    </Appenders>
+    <Loggers>
+        <AsyncRoot level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="Async"/>
+        </AsyncRoot>
+    </Loggers>
+</Configuration>

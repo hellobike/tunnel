@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.hellobike.base.tunnel</groupId>
+    <artifactId>tunnel-all</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${basedir}/logs</directory>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.1.1</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.8.0</version>
+                    <configuration>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                        <encoding>utf-8</encoding>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.ow2.asm</groupId>
+                            <artifactId>asm</artifactId>
+                            <version>${asm.version}</version> <!-- Use newer version of ASM -->
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.22.1</version>
+                    <configuration>
+                        <skipTests>true</skipTests>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <modules>
+        <module>tunnel-server</module>
+        <module>tunnel-spi</module>
+        <module>tunnel-monitor</module>
+    </modules>
+
+    <properties>
+        <asm.version>6.1.1</asm.version>
+        <postgresql.version>42.2.5</postgresql.version>
+        <log4j2.version>2.11.1</log4j2.version>
+        <disruptor.version>3.4.2</disruptor.version>
+        <es.version>6.4.2</es.version>
+        <apollo.version>1.2.0</apollo.version>
+        <junit.version>4.12</junit.version>
+        <fastjson.version>1.2.51</fastjson.version>
+        <commons-lang3.version>3.8.1</commons-lang3.version>
+        <curator.version>2.12.0</curator.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <jackson.version>2.9.8</jackson.version>
+        <snappy.version>1.1.7.2</snappy.version>
+        <druid.version>1.1.12</druid.version>
+        <guava.version>23.0</guava.version>
+
+
+        <hadoop.version>2.5.1</hadoop.version>
+        <hbase.version>1.3.0</hbase.version>
+        <hive.version>2.1.1</hive.version>
+
+
+        <lombok.version>1.18.4</lombok.version>
+
+
+        <tunnel.version>1.0.0-SNAPSHOT</tunnel.version>
+
+        <powermock.version>1.7.4</powermock.version>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <properties>
+                <env>dev</env>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+    </profiles>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>com.hellobike.base.tunnel</groupId>
+                <artifactId>tunnel-monitor</artifactId>
+                <version>${tunnel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hellobike.base.tunnel</groupId>
+                <artifactId>tunnel-api</artifactId>
+                <version>${tunnel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hellobike.base.tunnel</groupId>
+                <artifactId>tunnel-es</artifactId>
+                <version>${tunnel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hellobike.base.tunnel</groupId>
+                <artifactId>tunnel-hbase</artifactId>
+                <version>${tunnel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hellobike.base.tunnel</groupId>
+                <artifactId>tunnel-hdfs</artifactId>
+                <version>${tunnel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hellobike.base.tunnel</groupId>
+                <artifactId>tunnel-hive</artifactId>
+                <version>${tunnel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hellobike.base.tunnel</groupId>
+                <artifactId>tunnel-kafka</artifactId>
+                <version>${tunnel.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>log4j-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jcl-over-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>druid</artifactId>
+                <version>${druid.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>4.5.6</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpcore</artifactId>
+                <version>4.4.10</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>1.11</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-beanutils</groupId>
+                <artifactId>commons-beanutils</artifactId>
+                <version>1.9.3</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>3.2.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-logging</groupId>
+                <artifactId>commons-logging</artifactId>
+                <version>1.2</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.6</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.xerial.snappy</groupId>
+                <artifactId>snappy-java</artifactId>
+                <version>${snappy.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.lmax</groupId>
+                <artifactId>disruptor</artifactId>
+                <version>${disruptor.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+</project>

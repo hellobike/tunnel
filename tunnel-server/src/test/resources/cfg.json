@@ -1,0 +1,35 @@
+{
+  "": [
+    {
+      "address": "",
+      "database": "",
+      "username": "",
+      "password": "",
+      "slot": "",
+      "cluster": "",
+      "kafka": {
+        "addr": [],
+        "topic": "",
+        "filter": {
+          "dbName": "",
+          "tbName": "",
+          "fieldName": ""
+        }
+      },
+      "es": {
+        "addr": "",
+        "filter": {
+          "dbName": "",
+          "tbName": "",
+          "fieldName": ""
+        }
+      },
+      "filter": {
+        "dbName": "",
+        "tbName": "",
+        "fieldName": ""
+      }
+    },
+    {}
+  ]
+}
