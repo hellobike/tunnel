@@ -30,7 +30,7 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
-      - run: mvn dependency:go-offline
+      - run: mvn clean package dependency:go-offline
 
       - save_cache:
           paths:
@@ -39,3 +39,4 @@ jobs:
 
       # run tests!
       - run: mvn integration-test
+      - run: mvn cobertura:cobertura coveralls:report
