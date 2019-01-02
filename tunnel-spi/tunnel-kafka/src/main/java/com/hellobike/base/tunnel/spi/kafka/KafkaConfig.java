@@ -1,13 +1,9 @@
-package com.hellobike.base.tunnel.spi.kafka;
-
-import com.hellobike.base.tunnel.spi.api.TransportConfig;
-
 /*
  * Copyright 2018 Shanghai Junzheng Network Technology Co.,Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain CONFIG_NAME copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -18,10 +14,19 @@ import com.hellobike.base.tunnel.spi.api.TransportConfig;
  * limitations under the License.
  */
 
+package com.hellobike.base.tunnel.spi.kafka;
+
+import com.hellobike.base.tunnel.spi.api.BaseTransportConfig;
+import com.hellobike.base.tunnel.spi.api.TransportConfig;
+import lombok.Data;
+
 /**
  * @author machunxiao create at 2018-12-24
  */
-public class KafkaConfig implements TransportConfig<KafkaConfig> {
+@Data
+public class KafkaConfig extends BaseTransportConfig<KafkaConfig> implements TransportConfig<KafkaConfig> {
+
+    private String topic;
 
     @Override
     public KafkaConfig toRealConfig(String config) {

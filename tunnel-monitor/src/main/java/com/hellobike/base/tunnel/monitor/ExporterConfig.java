@@ -26,7 +26,7 @@ public class ExporterConfig {
 
     private int exportPort = 7788;
     private String metricName = "TunnelMetric";
-    private String[] labelName = labelNames();
+    private String[] labelNames = labelNames();
     private String loggerName = "TunnelLogger";
 
 

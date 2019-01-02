@@ -1,11 +1,9 @@
-package com.hellobike.base.tunnel.spi.kafka;
-
 /*
  * Copyright 2018 Shanghai Junzheng Network Technology Co.,Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain CONFIG_NAME copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -16,17 +14,46 @@ package com.hellobike.base.tunnel.spi.kafka;
  * limitations under the License.
  */
 
+package com.hellobike.base.tunnel.spi.kafka;
+
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+
+import java.util.Properties;
+
 /**
  * @author machunxiao create at 2018-12-24
  */
-public class KafkaClient {
+class KafkaClient {
 
-    private KafkaConfig kafkaConfig;
+    private KafkaClientConfig clientConfig;
+    private KafkaProducer<String, String> producer;
 
-    public KafkaClient(KafkaConfig kafkaConfig) {
+    KafkaClient(KafkaClientConfig clientConfig) {
+        this.clientConfig = clientConfig;
+        this.producer = new KafkaProducer<>(getProperties(clientConfig));
     }
 
-    public void send() {
+    private static Properties getProperties(KafkaClientConfig clientConfig) {
+        Properties props = new Properties();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, clientConfig.getServer());
+        props.put(ProducerConfig.ACKS_CONFIG, clientConfig.getAckConfig());
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, clientConfig.getKeySerializer());
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, clientConfig.getValSerializer());
+        props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, "org.apache.kafka.clients.producer.internals.DefaultPartitioner");
+        props.put(ProducerConfig.RETRIES_CONFIG, 1);
+        props.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
+        props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
+        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+        return props;
     }
 
+    void send(ProducerRecord<String, String> record) {
+        this.producer.send(record);
+    }
+
+    void close() {
+        this.producer.close();
+    }
 }

@@ -25,7 +25,10 @@ public class PrometheusMonitor implements TunnelMonitor {
     private final Gauge gauge;
 
     public PrometheusMonitor(ExporterConfig config) {
-        this.gauge = Gauge.build().name(config.getMetricName()).labelNames(config.getMetricName()).help("Tunnel Requests.").register();
+        this.gauge = Gauge.build()
+                .name(config.getMetricName())
+                .labelNames(config.getLabelNames())
+                .help("Tunnel Requests.").register();
     }
 
     @Override

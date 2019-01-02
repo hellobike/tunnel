@@ -1,11 +1,9 @@
-package com.hellobike.base.tunnel.spi.api;
-
 /*
  * Copyright 2018 Shanghai Junzheng Network Technology Co.,Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain CONFIG_NAME copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -16,10 +14,12 @@ package com.hellobike.base.tunnel.spi.api;
  * limitations under the License.
  */
 
+package com.hellobike.base.tunnel.spi.api;
+
 /**
  * @author machunxiao create at 2018-12-07
  */
-public interface OutputHandler {
+public interface OutputHandler extends AutoCloseable {
 
     /**
      * 输出消息
@@ -27,5 +27,11 @@ public interface OutputHandler {
      * @param invocation 消息内容
      */
     void handle(Invocation invocation);
+
+    /**
+     * 释放资源
+     */
+    @Override
+    void close();
 
 }

@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain CONFIG_NAME copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -27,6 +27,7 @@ import com.hellobike.base.tunnel.publisher.PublisherManager;
 import com.hellobike.base.tunnel.publisher.es.EsPublisher;
 import com.hellobike.base.tunnel.publisher.hbase.HBasePublisher;
 import com.hellobike.base.tunnel.publisher.kafka.KafkaPublisher;
+import com.hellobike.base.tunnel.spi.api.CollectionUtils;
 import com.hellobike.base.tunnel.utils.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
@@ -149,7 +150,7 @@ public class TunnelLauncher {
             config.setLoggerName(loggerName);
         }
         if (StringUtils.isNotBlank(labelNames)) {
-            config.setLabelName(labelNames.split(","));
+            config.setLabelNames(labelNames.split(","));
         }
         boolean useYukon = "true".equalsIgnoreCase(cfg.getOrDefault("-y", "true"));
         TunnelExporter exporter = TunnelMonitorFactory.initializeExporter(useYukon, config);
@@ -240,7 +241,7 @@ public class TunnelLauncher {
     }
 
     /**
-     * generate a new serverId
+     * generate CONFIG_NAME new serverId
      *
      * @param host host
      * @param port port
@@ -252,7 +253,7 @@ public class TunnelLauncher {
     }
 
     private static void parseKafkaConfig(String slotName, ApolloConfig.KafkaConf kafkaConf, List<ApolloConfig.Rule> rules) {
-        if (kafkaConf == null || kafkaConf.getAddrs() == null || kafkaConf.getAddrs().isEmpty()) {
+        if (kafkaConf == null || CollectionUtils.isEmpty(kafkaConf.getAddrs())) {
             return;
         }
 

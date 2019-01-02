@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain CONFIG_NAME copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -18,6 +18,7 @@ package com.hellobike.base.tunnel.store;
 import com.hellobike.base.tunnel.model.Event;
 import com.hellobike.base.tunnel.model.InvokeContext;
 import com.hellobike.base.tunnel.publisher.PublisherManager;
+import com.hellobike.base.tunnel.spi.api.CollectionUtils;
 import com.hellobike.base.tunnel.utils.NamedThreadFactory;
 import com.hellobike.base.tunnel.utils.TimeUtils;
 
@@ -62,7 +63,7 @@ public class MemStore implements IStore, AutoCloseable {
                 (event.getSchema() == null
                         && event.getTable() == null
                         && event.getEventType() == null
-                        && (event.getDataList() == null || event.getDataList().isEmpty()));
+                        && CollectionUtils.isEmpty(event.getDataList()));
     }
 
     private static boolean ctxIsEmpty(InvokeContext ctx) {
@@ -112,7 +113,7 @@ public class MemStore implements IStore, AutoCloseable {
     }
 
     private void forceFlushMemory(BlockingQueue<InvokeContext> queue) {
-        if (queue.isEmpty()) {
+        if (CollectionUtils.isEmpty(queue)) {
             return;
         }
         int capacity = started.get() ? Math.min(PER_CONTEXTS, queue.size()) : queue.size();

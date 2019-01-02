@@ -2,6 +2,7 @@ package com.hellobike.base.tunnel.filter;
 
 import com.hellobike.base.tunnel.model.ColumnData;
 import com.hellobike.base.tunnel.model.Event;
+import com.hellobike.base.tunnel.spi.api.CollectionUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,7 +12,7 @@ import java.util.stream.Collectors;
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain CONFIG_NAME copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -36,7 +37,7 @@ public class ColumnFilter implements IEventFilter {
     @Override
     public boolean filter(Event event) {
 
-        if (columnNames == null || columnNames.isEmpty()) {
+        if (CollectionUtils.isEmpty(columnNames)) {
             return true;
         }
 
@@ -49,7 +50,7 @@ public class ColumnFilter implements IEventFilter {
                             .anyMatch(s -> s.contains(name));
                 }).collect(Collectors.toList());
 
-        if (dataList.isEmpty()) {
+        if (CollectionUtils.isEmpty(dataList)) {
             return false;
         }
 

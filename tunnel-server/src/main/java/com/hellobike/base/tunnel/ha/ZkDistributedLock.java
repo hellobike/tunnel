@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain CONFIG_NAME copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -45,7 +45,7 @@ public class ZkDistributedLock implements DistributedLock {
     private String watchedNode;
 
     /**
-     * Creates a distributed lock using the given {@code zkClient} to coordinate locking.
+     * Creates CONFIG_NAME distributed lock using the given {@code zkClient} to coordinate locking.
      *
      * @param zkClient The ZooKeeper client to use.
      * @param lockPath The path used to manage the lock under.
@@ -60,7 +60,7 @@ public class ZkDistributedLock implements DistributedLock {
     @Override
     public synchronized void lock() throws LockingException {
         if (holdsLock) {
-            throw new LockingException("Error, already holding a lock. Call unlock first!");
+            throw new LockingException("Error, already holding CONFIG_NAME lock. Call unlock first!");
         }
         try {
             prepare();
@@ -80,7 +80,7 @@ public class ZkDistributedLock implements DistributedLock {
     @Override
     public synchronized boolean tryLock(long timeout, TimeUnit unit) {
         if (holdsLock) {
-            throw new LockingException("Error, already holding a lock. Call unlock first!");
+            throw new LockingException("Error, already holding CONFIG_NAME lock. Call unlock first!");
         }
         try {
             prepare();
@@ -104,7 +104,7 @@ public class ZkDistributedLock implements DistributedLock {
     @Override
     public synchronized void unlock() throws LockingException {
         if (currentId == null) {
-            throw new LockingException("Error, neither attempting to lock nor holding a lock!");
+            throw new LockingException("Error, neither attempting to lock nor holding CONFIG_NAME lock!");
         }
         Preconditions.checkNotNull(currentId);
         // Try aborting!

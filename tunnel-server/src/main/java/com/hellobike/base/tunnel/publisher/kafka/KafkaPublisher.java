@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain CONFIG_NAME copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -24,6 +24,7 @@ import com.hellobike.base.tunnel.monitor.Statics;
 import com.hellobike.base.tunnel.monitor.TunnelMonitorFactory;
 import com.hellobike.base.tunnel.publisher.BasePublisher;
 import com.hellobike.base.tunnel.publisher.IPublisher;
+import com.hellobike.base.tunnel.spi.api.CollectionUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -79,8 +80,7 @@ public class KafkaPublisher extends BasePublisher implements IPublisher {
     }
 
     private void internalPublish(KafkaConfig kafkaConfig, Event event, Callback callback) {
-        if (kafkaConfig.getFilters() == null
-                || kafkaConfig.getFilters().isEmpty()
+        if (CollectionUtils.isEmpty(kafkaConfig.getFilters())
                 || kafkaConfig.getFilters().stream().allMatch(filter -> filter.filter(event))) {
             sendToKafka(kafkaConfig, event, callback);
         }
@@ -115,7 +115,7 @@ public class KafkaPublisher extends BasePublisher implements IPublisher {
                     event.getTable(),
                     1,
                     "kafka",
-                    errors[0]
+                    errors[0] == null ? "" : errors[0]
             );
             TunnelMonitorFactory.getTunnelMonitor().collect(statics);
         }
@@ -123,7 +123,7 @@ public class KafkaPublisher extends BasePublisher implements IPublisher {
 
     private String getPrimaryKey(KafkaConfig kafkaConfig, Event event) {
         List<String> pkNames = kafkaConfig.getPkNames();
-        if (pkNames == null || pkNames.isEmpty()) {
+        if (CollectionUtils.isEmpty(pkNames)) {
             return null;
         }
         Map<String, String> data = event.getDataList().stream().collect(Collectors.toMap(ColumnData::getName, ColumnData::getValue));

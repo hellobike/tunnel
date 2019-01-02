@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain CONFIG_NAME copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -16,24 +16,26 @@
 
 package com.hellobike.base.tunnel.publisher.es;
 
+import com.alibaba.druid.pool.DruidDataSource;
 import com.hellobike.base.tunnel.config.EsConfig;
 import com.hellobike.base.tunnel.model.ColumnData;
 import com.hellobike.base.tunnel.model.Event;
+import com.hellobike.base.tunnel.model.EventType;
 import com.hellobike.base.tunnel.model.InvokeContext;
 import com.hellobike.base.tunnel.monitor.TunnelMonitorFactory;
 import com.hellobike.base.tunnel.publisher.BasePublisher;
 import com.hellobike.base.tunnel.publisher.IPublisher;
+import com.hellobike.base.tunnel.spi.api.CollectionUtils;
 import com.hellobike.base.tunnel.utils.NamedThreadFactory;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.MapHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
-import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.ActiveShardCount;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -44,7 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
@@ -65,6 +67,8 @@ public class EsPublisher extends BasePublisher implements IPublisher {
     private final LinkedBlockingQueue<Helper>           /**/ requestHelperQueue;
     private final RestHighLevelClient[]                 /**/ restClients;
 
+    private final Map<String, DruidDataSource>          /**/ dataSources;
+
 
     private volatile boolean                            /**/ started;
 
@@ -77,6 +81,7 @@ public class EsPublisher extends BasePublisher implements IPublisher {
         for (int i = 0; i < total; i++) {
             this.restClients[i] = newRestEsHighLevelClient();
         }
+        this.dataSources = new ConcurrentHashMap<>();
         this.requestHelperQueue = new LinkedBlockingQueue<>(81920);
 
         started = true;
@@ -101,9 +106,11 @@ public class EsPublisher extends BasePublisher implements IPublisher {
 
     @Override
     public void close() {
-        started = false;
+        this.started = false;
         this.executor.shutdown();
         Arrays.stream(this.restClients).forEach(this::closeClosable);
+        this.dataSources.values().forEach(this::closeClosable);
+        this.dataSources.clear();
         LOG.info("EsPublisher Closed");
     }
 
@@ -118,8 +125,7 @@ public class EsPublisher extends BasePublisher implements IPublisher {
     }
 
     private void internalPublish(InvokeContext context, Callback callback, EsConfig esConfig) {
-        if (esConfig.getFilters() == null
-                || esConfig.getFilters().isEmpty()
+        if (CollectionUtils.isEmpty(esConfig.getFilters())
                 || esConfig.getFilters().stream().allMatch(filter -> filter.filter(context.getEvent()))) {
             sendToEs(esConfig, context, callback);
         }
@@ -129,7 +135,7 @@ public class EsPublisher extends BasePublisher implements IPublisher {
 
         try {
 
-            requestHelperQueue.put(new Helper(context, esConfig, callback));
+            requestHelperQueue.put(new Helper(esConfig, context));
 
             onSuccess(callback);
         } catch (Exception e) {
@@ -144,13 +150,9 @@ public class EsPublisher extends BasePublisher implements IPublisher {
 
     }
 
-    private DocWriteRequest eventToRequest(EsConfig esConfig, InvokeContext context) {
+    private DocWriteRequest eventToRequest(EsConfig esConfig, EventType eventType, Map<String, String> values) {
 
         DocWriteRequest req = null;
-
-        Map<String, String> values = context.getEvent().getDataList()
-                .stream()
-                .collect(Collectors.toMap(ColumnData::getName, ColumnData::getValue));
 
         // column_name,column_name
         String id = esConfig.getEsIdFieldNames()
@@ -166,22 +168,12 @@ public class EsPublisher extends BasePublisher implements IPublisher {
         String index = esConfig.getIndex();
 
 
-        switch (context.getEvent().getEventType()) {
+        switch (eventType) {
             case INSERT:
-                IndexRequest ir = new IndexRequest(index, type, id);
-                ir.opType(DocWriteRequest.OpType.CREATE);
-
-                execSQL(esConfig, context, values);
-
-                ir.source(values);
-                req = ir;
-                break;
             case UPDATE:
                 UpdateRequest ur = new UpdateRequest(index, type, id);
-
-                execSQL(esConfig, context, values);
-
                 ur.doc(values);
+                ur.docAsUpsert(true);
                 req = ur;
                 break;
             case DELETE:
@@ -195,7 +187,7 @@ public class EsPublisher extends BasePublisher implements IPublisher {
         return req;
     }
 
-    private void execSQL(EsConfig esConfig, InvokeContext context, Map<String, String> values) {
+    private Map<String, String> execSQL(EsConfig esConfig, InvokeContext context, Map<String, String> values) {
         String sql = esConfig.getSql();
         List<String> parameters = esConfig.getParameters();
         if (sql != null && parameters != null) {
@@ -207,14 +199,14 @@ public class EsPublisher extends BasePublisher implements IPublisher {
             // 执行sql,获得结果集
             Map<String, Object> result = executeQuery(sql, context);
             Map<String, String> newValues = new LinkedHashMap<>();
-            result.entrySet().stream()
-                    .filter(e -> e.getValue() != null)
-                    .forEach(e -> newValues.put(e.getKey(), String.valueOf(e.getValue())));
-            if (!newValues.isEmpty()) {
-                values.clear();
-                values.putAll(newValues);
+            if (!result.isEmpty()) {
+                result.entrySet().stream()
+                        .filter(e -> e.getValue() != null)
+                        .forEach(e -> newValues.put(e.getKey(), String.valueOf(e.getValue())));
             }
+            return newValues;
         }
+        return values;
     }
 
     private String getValue(Object val) {
@@ -247,20 +239,6 @@ public class EsPublisher extends BasePublisher implements IPublisher {
         }
     }
 
-    private void asyncSend(RestHighLevelClient restClient, List<DocWriteRequest> doc) {
-        BulkRequest br = createBulkRequest(doc);
-        RequestOptions requestOptions = createRequestOptions();
-        restClient.bulkAsync(br, requestOptions, new ActionListener<BulkResponse>() {
-            @Override
-            public void onResponse(BulkResponse responses) {
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-            }
-        });
-    }
-
     private BulkRequest createBulkRequest(List<DocWriteRequest> doc) {
         BulkRequest br = new BulkRequest();
         br.add(doc);
@@ -283,24 +261,6 @@ public class EsPublisher extends BasePublisher implements IPublisher {
         return helpers;
     }
 
-    private Event findMaxEvent(List<Helper> helpers) {
-        if (helpers == null || helpers.isEmpty()) {
-            return null;
-        }
-        return helpers.stream()
-                .max(Comparator.comparingLong(h1 -> h1.context.getLsn()))
-                .map(helper -> helper.context.getEvent())
-                .orElse(null);
-    }
-
-    private List<DocWriteRequest> transferToReq(List<Helper> helpers) {
-
-        return helpers.stream()
-                .map(helper -> eventToRequest(helper.config, helper.context))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-    }
-
     private RestHighLevelClient newRestEsHighLevelClient() {
         return new RestHighLevelClient(RestClient.builder(
                 this.esConfigs
@@ -314,15 +274,18 @@ public class EsPublisher extends BasePublisher implements IPublisher {
         List<Helper> helpers = pollHelperFromQueue(requestHelperQueue);
         try {
 
-            if (helpers.isEmpty()) {
+            if (CollectionUtils.isEmpty(helpers)) {
                 return;
             }
 
-            syncSend(restClients[idx], transferToReq(helpers));
+            Map<String, List<Helper>> data = helpers.stream()
+                    .collect(Collectors.groupingBy(helper -> helper.esConfig.getTable()));
+            for (List<Helper> list : data.values()) {
+                if (list.isEmpty()) {
+                    continue;
+                }
+                syncSend(restClients[idx], toRequests(list));
 
-            Event maxEvent = findMaxEvent(helpers);
-            if (maxEvent != null) {
-                LOG.info("flush queue success,lsn:{}", maxEvent.getLsn());
             }
         } finally {
             if (!helpers.isEmpty()) {
@@ -332,6 +295,75 @@ public class EsPublisher extends BasePublisher implements IPublisher {
                 );
             }
         }
+    }
+
+    private List<DocWriteRequest> toRequests(List<Helper> helpers) {
+        EsConfig esConfig = helpers.get(0).esConfig;
+
+        String sql = esConfig.getSql();
+        List<String> parameters = esConfig.getParameters();
+        boolean sqlExists = StringUtils.isNotBlank(sql) && parameters != null && !parameters.isEmpty();
+        if (sqlExists) {
+            // select xx where id in (?)
+            // select xx where (id,name) in (?)
+            List<String> param = new ArrayList<>();
+            for (Helper helper : helpers) {
+                Map<String, String> values = helper.context.getEvent().getDataList()
+                        .stream()
+                        .collect(Collectors.toMap(ColumnData::getName, ColumnData::getValue));
+                List<String> args = new ArrayList<>();
+                for (String k : parameters) {
+                    args.add(getValue(values.get(k)));
+                }
+
+                String arg = "(" + StringUtils.join(args, ",") + ")";
+                param.add(arg);
+            }
+
+            sql = sql.replace("?", StringUtils.join(param, ","));
+
+            List<Map<String, Object>> data = execute(sql, helpers.get(0).context);
+
+            return data.stream()
+                    .map(line -> {
+                        Map<String, String> lines = new LinkedHashMap<>();
+                        for (Map.Entry<String, Object> e : line.entrySet()) {
+                            lines.put(e.getKey(), String.valueOf(e.getValue()));
+                        }
+                        return lines;
+                    })
+                    .map(line -> eventToRequest(esConfig, EventType.INSERT, line))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        } else {
+            return helpers.stream()
+                    .map(helper ->
+                            eventToRequest(
+                                    helper.esConfig,
+                                    helper.context.getEvent().getEventType(),
+                                    helper.context.getEvent().getDataList()
+                                            .stream()
+                                            .collect(Collectors.toMap(ColumnData::getName, ColumnData::getValue))
+                            )
+                    )
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        }
+
+    }
+
+    private List<Map<String, Object>> execute(String sql, InvokeContext context) {
+        try (Connection conn = getConnection(context)) {
+            QueryRunner qr = new QueryRunner();
+            List<Map<String, Object>> list = qr.query(conn, sql, new MapListHandler());
+            if (list == null) {
+                list = new LinkedList<>();
+            }
+            return list;
+        } catch (Exception e) {
+            //
+        }
+        return new LinkedList<>();
     }
 
     private Map<String, Long> getMonitorData(List<Helper> helpers) {
@@ -347,7 +379,7 @@ public class EsPublisher extends BasePublisher implements IPublisher {
     private Map<String, Object> executeQuery(String sql, InvokeContext context) {
         Connection connection = null;
         try {
-            connection = DriverManager.getConnection(context.getJdbcUrl(), context.getJdbcUser(), context.getJdbcPass());
+            connection = getConnection(context);
             QueryRunner qr = new QueryRunner();
             Map<String, Object> query = qr.query(connection, sql, new MapHandler());
             if (query == null || query.isEmpty()) {
@@ -363,16 +395,39 @@ public class EsPublisher extends BasePublisher implements IPublisher {
         return new LinkedHashMap<>();
     }
 
+    private Connection getConnection(InvokeContext ctx) throws SQLException {
+        DruidDataSource dataSource = dataSources.get(ctx.getSlotName());
+        if (dataSource == null) {
+            DruidDataSource tmp;
+            synchronized (this) {
+                tmp = createDataSource(ctx);
+            }
+            dataSources.put(ctx.getSlotName(), tmp);
+            dataSource = dataSources.get(ctx.getSlotName());
+            LOG.info("DataSource Initialized. Slot:{},DataSource:{}", ctx.getSlotName(), dataSource.getName());
+        }
+        return dataSource.getConnection();
+    }
+
+    private DruidDataSource createDataSource(InvokeContext ctx) {
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setUsername(ctx.getJdbcUser());
+        dataSource.setUrl(ctx.getJdbcUrl());
+        dataSource.setPassword(ctx.getJdbcPass());
+        dataSource.setValidationQuery("select 1");
+        dataSource.setMinIdle(20);
+        dataSource.setMaxActive(50);
+        return dataSource;
+    }
+
     private static class Helper {
 
+        final EsConfig esConfig;
         final InvokeContext context;
-        final EsConfig config;
-        final Callback callback;
 
-        private Helper(InvokeContext context, EsConfig config, Callback callback) {
+        private Helper(EsConfig esConfig, InvokeContext context) {
+            this.esConfig = esConfig;
             this.context = context;
-            this.config = config;
-            this.callback = callback;
         }
     }
 

@@ -5,7 +5,7 @@ package com.hellobike.base.tunnel.utils;
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain CONFIG_NAME copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -22,7 +22,7 @@ package com.hellobike.base.tunnel.utils;
 public interface ObjectPool<T> extends AutoCloseable {
 
     /**
-     * get a object from pool
+     * get CONFIG_NAME object from pool
      *
      * @return instance
      */

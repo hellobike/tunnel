@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain CONFIG_NAME copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -18,6 +18,7 @@ package com.hellobike.base.tunnel.publisher;
 
 import com.hellobike.base.tunnel.model.Event;
 import com.hellobike.base.tunnel.model.InvokeContext;
+import com.hellobike.base.tunnel.spi.api.CollectionUtils;
 
 import java.util.List;
 
@@ -61,7 +62,7 @@ public interface IPublisher extends AutoCloseable {
      * @param contexts 上下文
      */
     default void publish(List<InvokeContext> contexts) {
-        if (contexts == null || contexts.isEmpty()) {
+        if (CollectionUtils.isEmpty(contexts)) {
             return;
         }
         contexts.forEach(ctx -> publish(ctx, null));

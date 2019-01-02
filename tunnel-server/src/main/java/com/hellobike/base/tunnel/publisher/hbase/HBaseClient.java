@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain CONFIG_NAME copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -21,6 +21,7 @@ import com.hellobike.base.tunnel.model.ColumnData;
 import com.hellobike.base.tunnel.model.Event;
 import com.hellobike.base.tunnel.monitor.TunnelMonitorFactory;
 import com.hellobike.base.tunnel.publisher.BasePublisher;
+import com.hellobike.base.tunnel.spi.api.CollectionUtils;
 import com.hellobike.base.tunnel.utils.DefaultObjectPoolFactory;
 import com.hellobike.base.tunnel.utils.NamedThreadFactory;
 import com.hellobike.base.tunnel.utils.ObjectManager;
@@ -185,7 +186,7 @@ public class HBaseClient {
 
     private void doDelete() {
         List<DeleteHelper> deletes = pollFromQueue(deleteQueue);
-        if (deletes.isEmpty()) {
+        if (CollectionUtils.isEmpty(deletes)) {
             return;
         }
         long s = System.currentTimeMillis();
@@ -213,7 +214,7 @@ public class HBaseClient {
 
     private void doInsert() {
         List<InsertHelper> inserts = pollFromQueue(insertQueue);
-        if (inserts.isEmpty()) {
+        if (CollectionUtils.isEmpty(inserts)) {
             return;
         }
 
