@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.hellobike.base.tunnel.publisher.hdfs;
+package com.hellobike.base.tunnel.publisher.hive;
 
 import lombok.Data;
 
 import java.util.List;
 
 /**
- * @author machunxiao create at 2018-11-30
+ * @author machunxiao create at 2019-01-15
  */
 @Data
-public class HdfsConfig {
-    private String address;
-    private String fileName;
-    private List<HdfsRule> rules;
+public class HiveRule {
+    private String table;
+    private String hiveTable;
+    private List<String> fields;
+    private List<String> pks;
 }

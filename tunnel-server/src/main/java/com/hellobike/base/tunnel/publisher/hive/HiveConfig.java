@@ -16,51 +16,27 @@
 
 package com.hellobike.base.tunnel.publisher.hive;
 
+import com.hellobike.base.tunnel.filter.IEventFilter;
+import lombok.Data;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @author machunxiao create at 2018-11-27
  */
+@Data
 public class HiveConfig {
 
     private String hiveUrl;
     private String username;
     private String password;
-
+    private String dataDir;
     private String table;
+    private String partition;
+    private String[] hdfsAddresses;
 
-    private List<String> pks;
-
-    public String getHiveUrl() {
-        return hiveUrl;
-    }
-
-    public void setHiveUrl(String hiveUrl) {
-        this.hiveUrl = hiveUrl;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public List<String> getPks() {
-        return pks;
-    }
-
-    public void setPks(List<String> pks) {
-        this.pks = pks;
-    }
+    private List<IEventFilter> filters = new ArrayList<>();
+    private List<HiveRule> rules = new ArrayList<>();
 
 }

@@ -18,14 +18,10 @@ package com.hellobike.base.tunnel.publisher.hdfs;
 
 import lombok.Data;
 
-import java.util.List;
-
 /**
- * @author machunxiao create at 2018-11-30
+ * @author machunxiao create at 2019-01-15
  */
 @Data
-public class HdfsConfig {
-    private String address;
-    private String fileName;
-    private List<HdfsRule> rules;
+public class HdfsRule {
+    private String table;
 }

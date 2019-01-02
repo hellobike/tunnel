@@ -20,6 +20,9 @@ import com.hellobike.base.tunnel.model.Event;
 import com.hellobike.base.tunnel.model.EventType;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author machunxiao create at 2018-12-03
  */
@@ -30,11 +33,23 @@ public class HiveClientTest {
         HiveConfig config = new HiveConfig();
         config.setHiveUrl("jdbc:hive2://10.111.20.161:10000/default;ssl=false;");
         HiveClient hiveClient = new HiveClient(config);
-        hiveClient.insert(newEvent());
+        hiveClient.insert(null, newEvent());
     }
 
     @Test
     public void test_find() {
+
+        Map<String, String> data = new HashMap<>();
+
+        data.put("k1", "v1");
+        data.put("k2", "v2");
+        data.put("k3", "v3");
+
+        StringBuffer out = new StringBuffer();
+        data.forEach((k, v) -> out.append(k).append("=").append("'").append(v).append("',"));
+        out.setCharAt(out.length() - 1, ' ');
+
+        System.out.println(out);
     }
 
     private Event newEvent() {

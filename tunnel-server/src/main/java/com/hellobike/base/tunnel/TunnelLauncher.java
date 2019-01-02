@@ -26,6 +26,12 @@ import com.hellobike.base.tunnel.monitor.TunnelMonitorFactory;
 import com.hellobike.base.tunnel.publisher.PublisherManager;
 import com.hellobike.base.tunnel.publisher.es.EsPublisher;
 import com.hellobike.base.tunnel.publisher.hbase.HBasePublisher;
+import com.hellobike.base.tunnel.publisher.hdfs.HdfsConfig;
+import com.hellobike.base.tunnel.publisher.hdfs.HdfsPublisher;
+import com.hellobike.base.tunnel.publisher.hdfs.HdfsRule;
+import com.hellobike.base.tunnel.publisher.hive.HiveConfig;
+import com.hellobike.base.tunnel.publisher.hive.HivePublisher;
+import com.hellobike.base.tunnel.publisher.hive.HiveRule;
 import com.hellobike.base.tunnel.publisher.kafka.KafkaPublisher;
 import com.hellobike.base.tunnel.spi.api.CollectionUtils;
 import com.hellobike.base.tunnel.utils.FileUtils;
@@ -295,9 +301,68 @@ public class TunnelLauncher {
     }
 
     private static void parseHiveConfig(String slotName, ApolloConfig.HiveConf hiveConf, List<ApolloConfig.Rule> rules) {
+        if (hiveConf == null || StringUtils.isBlank(hiveConf.getHdfsAddress())) {
+            return;
+        }
+        List<HiveRule> hiveRules = rules.stream()
+                .map(TunnelLauncher::toHiveRule)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        HiveConfig hiveConfig = new HiveConfig();
+        hiveConfig.setUsername(StringUtils.isBlank(hiveConf.getUser()) ? "default" : hiveConf.getUser());
+        hiveConfig.setPassword(StringUtils.isBlank(hiveConf.getPassword()) ? "default" : hiveConf.getPassword());
+        hiveConfig.setHiveUrl("jdbc:hive2://" + hiveConf.getHost() + ":" + hiveConf.getPort() + "/default;ssl=false;");
+        hiveConfig.setRules(hiveRules);
+        hiveConfig.setDataDir(hiveConf.getDataDir());
+        hiveConfig.setTable(hiveConf.getTableName());
+        hiveConfig.setPartition(hiveConf.getPartition());
+        hiveConfig.setHdfsAddresses(hiveConf.getHdfsAddress().split(","));
+
+
+        PublisherManager.getInstance().putPublisher(slotName, new HivePublisher(hiveConfig));
+
     }
 
     private static void parseHdfsConfig(String slotName, ApolloConfig.HdfsConf hdfsConf, List<ApolloConfig.Rule> rules) {
+        if (hdfsConf == null
+                || StringUtils.isBlank(hdfsConf.getAddress())
+                || StringUtils.isBlank(hdfsConf.getFile())
+                || CollectionUtils.isEmpty(rules)) {
+            return;
+        }
+        HdfsConfig hdfsConfig = new HdfsConfig();
+        hdfsConfig.setAddress(hdfsConf.getAddress());
+        hdfsConfig.setFileName(hdfsConf.getFile());
+        List<HdfsRule> hdfsRules = rules.stream()
+                .map(TunnelLauncher::toHdfsRule)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        hdfsConfig.setRules(hdfsRules);
+        PublisherManager.getInstance().putPublisher(slotName, new HdfsPublisher(hdfsConfig));
+    }
+
+    private static HiveRule toHiveRule(ApolloConfig.Rule rule) {
+        if (rule.getTable() == null
+                || CollectionUtils.isEmpty(rule.getHiveFields())
+                || CollectionUtils.isEmpty(rule.getPks())) {
+            return null;
+        }
+        HiveRule hiveRule = new HiveRule();
+        hiveRule.setTable(rule.getTable());
+        hiveRule.setHiveTable(rule.getHiveTable());
+        hiveRule.setFields(rule.getHiveFields());
+        hiveRule.setPks(rule.getPks());
+        return hiveRule;
+    }
+
+    private static HdfsRule toHdfsRule(ApolloConfig.Rule rule) {
+        if (StringUtils.isBlank(rule.getTable())) {
+            return null;
+        }
+        HdfsRule hdfsRule = new HdfsRule();
+        hdfsRule.setTable(rule.getTable());
+        return hdfsRule;
     }
 
     private static KafkaConfig toKafkaConfig(ApolloConfig.Rule rule) {

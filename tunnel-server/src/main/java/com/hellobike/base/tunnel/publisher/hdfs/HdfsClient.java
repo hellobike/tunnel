@@ -24,20 +24,25 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
+import java.net.URI;
 
 /**
  * @author machunxiao create at 2018-11-30
  */
 public class HdfsClient {
 
-    private Configuration configuration;
-
+    private String address;
     private String fileName;
 
-    public void append(HdfsConfig config, Event event) {
+    public HdfsClient(String address, String fileName) {
+        this.address = address;
+        this.fileName = fileName;
+    }
+
+    public void append(HdfsConfig config, HdfsRule rule, Event event) {
         try {
             Configuration hadoopConfig = new Configuration();
-            FileSystem fileSystem = FileSystem.get(hadoopConfig);
+            FileSystem fileSystem = FileSystem.get(URI.create(this.address), hadoopConfig);
             Path hdfsPath = new Path(fileName);
             FSDataOutputStream fileOutputStream = null;
             try {
@@ -62,10 +67,10 @@ public class HdfsClient {
 
     }
 
-    public void delete(HdfsConfig config, Event event) {
+    public void delete(HdfsConfig config, HdfsRule rule, Event event) {
     }
 
-    public void update(HdfsConfig config, Event event) {
+    public void update(HdfsConfig config, HdfsRule rule, Event event) {
     }
 
 }

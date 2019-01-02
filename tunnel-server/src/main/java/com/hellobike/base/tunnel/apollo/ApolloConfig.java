@@ -17,6 +17,7 @@
 package com.hellobike.base.tunnel.apollo;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import lombok.Data;
 
 import java.util.List;
 import java.util.Map;
@@ -26,28 +27,14 @@ import java.util.Map;
  *
  * @author machunxiao 2018-11-01
  */
+@Data
 public class ApolloConfig {
 
     @JSONField(name = "pg_dump_path")
     private String pgDumpPath;
     private List<Subscribe> subscribes;
 
-    public String getPgDumpPath() {
-        return pgDumpPath;
-    }
-
-    public void setPgDumpPath(String pgDumpPath) {
-        this.pgDumpPath = pgDumpPath;
-    }
-
-    public List<Subscribe> getSubscribes() {
-        return subscribes;
-    }
-
-    public void setSubscribes(List<Subscribe> subscribes) {
-        this.subscribes = subscribes;
-    }
-
+    @Data
     public static class Subscribe {
 
         private String slotName;
@@ -59,72 +46,9 @@ public class ApolloConfig {
         private HiveConf hiveConf;
         private HdfsConf hdfsConf;
 
-
-        public String getSlotName() {
-            return slotName;
-        }
-
-        public void setSlotName(String slotName) {
-            this.slotName = slotName;
-        }
-
-        public PgConnConf getPgConnConf() {
-            return pgConnConf;
-        }
-
-        public void setPgConnConf(PgConnConf pgConnConf) {
-            this.pgConnConf = pgConnConf;
-        }
-
-        public List<Rule> getRules() {
-            return rules;
-        }
-
-        public void setRules(List<Rule> rules) {
-            this.rules = rules;
-        }
-
-        public KafkaConf getKafkaConf() {
-            return kafkaConf;
-        }
-
-        public void setKafkaConf(KafkaConf kafkaConf) {
-            this.kafkaConf = kafkaConf;
-        }
-
-        public EsConf getEsConf() {
-            return esConf;
-        }
-
-        public void setEsConf(EsConf esConf) {
-            this.esConf = esConf;
-        }
-
-        public HBaseConf getHbaseConf() {
-            return hbaseConf;
-        }
-
-        public void setHbaseConf(HBaseConf hbaseConf) {
-            this.hbaseConf = hbaseConf;
-        }
-
-        public HiveConf getHiveConf() {
-            return hiveConf;
-        }
-
-        public void setHiveConf(HiveConf hiveConf) {
-            this.hiveConf = hiveConf;
-        }
-
-        public HdfsConf getHdfsConf() {
-            return hdfsConf;
-        }
-
-        public void setHdfsConf(HdfsConf hdfsConf) {
-            this.hdfsConf = hdfsConf;
-        }
     }
 
+    @Data
     public static class PgConnConf {
         private String host;
         private int port;
@@ -132,98 +56,47 @@ public class ApolloConfig {
         private String schema;
         private String user;
         private String password;
-
-        public String getHost() {
-            return host;
-        }
-
-        public void setHost(String host) {
-            this.host = host;
-        }
-
-        public int getPort() {
-            return port;
-        }
-
-        public void setPort(int port) {
-            this.port = port;
-        }
-
-        public String getDatabase() {
-            return database;
-        }
-
-        public void setDatabase(String database) {
-            this.database = database;
-        }
-
-        public String getSchema() {
-            return schema;
-        }
-
-        public void setSchema(String schema) {
-            this.schema = schema;
-        }
-
-        public String getUser() {
-            return user;
-        }
-
-        public void setUser(String user) {
-            this.user = user;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
     }
 
+    @Data
     public static class KafkaConf {
         private List<String> addrs;
-
-        public List<String> getAddrs() {
-            return addrs;
-        }
-
-        public void setAddrs(List<String> addrs) {
-            this.addrs = addrs;
-        }
     }
 
+    @Data
     public static class EsConf {
         private String addrs;
-
-        public String getAddrs() {
-            return addrs;
-        }
-
-        public void setAddrs(String addrs) {
-            this.addrs = addrs;
-        }
     }
 
+    @Data
     public static class HBaseConf {
         private String zkquorum;
-
-        public String getZkquorum() {
-            return zkquorum;
-        }
-
-        public void setZkquorum(String zkquorum) {
-            this.zkquorum = zkquorum;
-        }
     }
 
+    @Data
     public static class HiveConf {
+        private String host;
+        private int port;
+        private String user;
+        private String password;
+
+        @JSONField(name = "hdfs_address")
+        private String hdfsAddress;
+        @JSONField(name = "data_dir")
+        private String dataDir;
+        @JSONField(name = "table_name")
+        private String tableName;
+        private String partition;
+
     }
 
+    @Data
     public static class HdfsConf {
+        private String address;
+        private String file;
     }
 
+    @Data
     public static class Rule {
 
         private String table;
@@ -248,125 +121,9 @@ public class ApolloConfig {
         private String hbaseTable;
         private List<String> hbaseKey;
 
-        public String getTable() {
-            return table;
-        }
+        private String hiveTable;
+        private List<String> hiveFields;
 
-        public void setTable(String table) {
-            this.table = table;
-        }
-
-        public String getTopic() {
-            return topic;
-        }
-
-        public void setTopic(String topic) {
-            this.topic = topic;
-        }
-
-        public int getPartition() {
-            return partition;
-        }
-
-        public void setPartition(int partition) {
-            this.partition = partition;
-        }
-
-        public List<String> getPks() {
-            return pks;
-        }
-
-        public void setPks(List<String> pks) {
-            this.pks = pks;
-        }
-
-        public List<String> getEsid() {
-            return esid;
-        }
-
-        public void setEsid(List<String> esid) {
-            this.esid = esid;
-        }
-
-        public String getIndex() {
-            return index;
-        }
-
-        public void setIndex(String index) {
-            this.index = index;
-        }
-
-        public String getType() {
-            return type;
-        }
-
-        public void setType(String type) {
-            this.type = type;
-        }
-
-        public Map<String, String> getFields() {
-            return fields;
-        }
-
-        public void setFields(Map<String, String> fields) {
-            this.fields = fields;
-        }
-
-        public String getSql() {
-            return sql;
-        }
-
-        public void setSql(String sql) {
-            this.sql = sql;
-        }
-
-        public List<String> getParameters() {
-            return parameters;
-        }
-
-        public void setParameters(List<String> parameters) {
-            this.parameters = parameters;
-        }
-
-        public String getFamily() {
-            return family;
-        }
-
-        public void setFamily(String family) {
-            this.family = family;
-        }
-
-        public String getQualifier() {
-            return qualifier;
-        }
-
-        public void setQualifier(String qualifier) {
-            this.qualifier = qualifier;
-        }
-
-        public List<String> getRowKeys() {
-            return rowKeys;
-        }
-
-        public void setRowKeys(List<String> rowKeys) {
-            this.rowKeys = rowKeys;
-        }
-
-        public String getHbaseTable() {
-            return hbaseTable;
-        }
-
-        public void setHbaseTable(String hbaseTable) {
-            this.hbaseTable = hbaseTable;
-        }
-
-        public List<String> getHbaseKey() {
-            return hbaseKey;
-        }
-
-        public void setHbaseKey(List<String> hbaseKey) {
-            this.hbaseKey = hbaseKey;
-        }
     }
 
     /**
@@ -384,35 +141,13 @@ public class ApolloConfig {
      *
      * </pre>
      */
+    @Data
     public static class Join {
 
         private String table;
         private String sql;
         private List<String> parameters;
 
-        public String getTable() {
-            return table;
-        }
-
-        public void setTable(String table) {
-            this.table = table;
-        }
-
-        public String getSql() {
-            return sql;
-        }
-
-        public void setSql(String sql) {
-            this.sql = sql;
-        }
-
-        public List<String> getParameters() {
-            return parameters;
-        }
-
-        public void setParameters(List<String> parameters) {
-            this.parameters = parameters;
-        }
     }
 
 }

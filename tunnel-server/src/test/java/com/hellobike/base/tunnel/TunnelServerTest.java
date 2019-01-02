@@ -15,6 +15,8 @@
  */
 package com.hellobike.base.tunnel;
 
+import com.alibaba.fastjson.JSON;
+import com.hellobike.base.tunnel.apollo.ApolloConfig;
 import com.hellobike.base.tunnel.utils.TimeUtils;
 import org.junit.Test;
 
@@ -45,6 +47,53 @@ public class TunnelServerTest {
         }
         stopped = true;
         executor.shutdown();
+    }
+
+    @Test
+    public void test_parseConfig() {
+        String config = "{\n" +
+                "    \"pg_dump_path\": \"\",\n" +
+                "    \"subscribes\": [\n" +
+                "        {\n" +
+                "            \"slotName\": \"slot_for_pt_java_hive123\",\n" +
+                "            \"pgConnConf\": {\n" +
+                "                \"host\": \"10.111.40.139\",\n" +
+                "                \"port\": 3034,\n" +
+                "                \"database\": \"bike_market\",\n" +
+                "                \"schema\": \"bike_market\",\n" +
+                "                \"user\": \"replica\",\n" +
+                "                \"password\": \"replica\"\n" +
+                "            },\n" +
+                "            \"rules\": [\n" +
+                "                {\n" +
+                "                    \"table\": \"java_hive_student.*\",\n" +
+                "                    \"hiveTable\": \"pt_java_hive_student\",\n" +
+                "                    \"pks\": [\n" +
+                "                        \"guid\"\n" +
+                "                    ],\n" +
+                "                    \"hiveFields\": [\n" +
+                "                        \"guid\",\n" +
+                "                        \"name\",\n" +
+                "                        \"number\"\n" +
+                "                    ]\n" +
+                "                }\n" +
+                "            ],\n" +
+                "            \"hiveConf\": {\n" +
+                "                \"host\": \"10.111.20.161\",\n" +
+                "                \"port\": 10000,\n" +
+                "                \"user\": \"\",\n" +
+                "                \"password\": \"\",\n" +
+                "                \"hdfs_address\": \"VECS00028:8020,VECS00029:8020\",\n" +
+                "                \"data_dir\": \"/tmp/forhivesync\",\n" +
+                "                \"table_name\": \"pt_java_hive_student\",\n" +
+                "                \"partition\": \"dt\"\n" +
+                "            }\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}";
+        ApolloConfig apolloConfig = JSON.parseObject(config, ApolloConfig.class);
+        apolloConfig.getSubscribes();
+        apolloConfig.getSubscribes();
     }
 
     private static class Task implements Runnable {

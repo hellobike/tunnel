@@ -20,40 +20,54 @@ import com.hellobike.base.tunnel.model.Event;
 import com.hellobike.base.tunnel.publisher.BasePublisher;
 import com.hellobike.base.tunnel.publisher.IPublisher;
 
+import java.util.List;
+import java.util.regex.Pattern;
+
 /**
  * @author machunxiao create at 2018-11-27
  */
 public class HivePublisher extends BasePublisher implements IPublisher {
 
-    private final HiveClient hiveClient;
+    private final HiveConfig hiveConfig;
+    private final HdfsClient hdfsClient;
 
     public HivePublisher(HiveConfig hiveConfig) {
-        this.hiveClient = new HiveClient(hiveConfig);
+        this.hiveConfig = hiveConfig;
+        this.hdfsClient = new HdfsClient(hiveConfig);
     }
 
     @Override
     public void publish(Event event, Callback callback) {
         //
-        switch (event.getEventType()) {
-            case INSERT:
-                hiveClient.insert(event);
-                break;
-            case DELETE:
-                hiveClient.delete(event);
-                break;
-            case UPDATE:
-                hiveClient.update(event);
-                break;
-            default:
-                break;
+        List<HiveRule> rules = this.hiveConfig.getRules();
+        for (HiveRule rule : rules) {
+            String table = rule.getTable();
+            if (!testTableName(table, event.getTable())) {
+                continue;
+            }
+            switch (event.getEventType()) {
+                case INSERT:
+                    hdfsClient.insert(rule, event);
+                    break;
+                case DELETE:
+                    break;
+                case UPDATE:
+                    break;
+                default:
+                    break;
+            }
         }
 
     }
 
     @Override
     public void close() {
-        hiveClient.close();
+        hdfsClient.close();
     }
 
+
+    private boolean testTableName(String tableFilter, String table) {
+        return Pattern.compile(tableFilter).matcher(table).matches();
+    }
 
 }

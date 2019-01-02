@@ -1,11 +1,3 @@
-package com.hellobike.base.tunnel.publisher.hdfs;
-
-import com.hellobike.base.tunnel.model.Event;
-import com.hellobike.base.tunnel.publisher.BasePublisher;
-import com.hellobike.base.tunnel.publisher.IPublisher;
-
-import java.util.List;
-
 /*
  * Copyright 2018 Shanghai Junzheng Network Technology Co.,Ltd.
  *
@@ -22,31 +14,42 @@ import java.util.List;
  * limitations under the License.
  */
 
+package com.hellobike.base.tunnel.publisher.hdfs;
+
+import com.hellobike.base.tunnel.model.Event;
+import com.hellobike.base.tunnel.publisher.BasePublisher;
+import com.hellobike.base.tunnel.publisher.IPublisher;
+
+import java.util.regex.Pattern;
+
 /**
  * @author machunxiao create at 2018-11-30
  */
 public class HdfsPublisher extends BasePublisher implements IPublisher {
 
-    private List<HdfsConfig> configs;
-    private HdfsClient hdfsClient;
+    private final HdfsConfig hdfsConfig;
+    private final HdfsClient hdfsClient;
 
-    public HdfsPublisher(List<HdfsConfig> configs) {
-        this.configs = configs;
-        this.hdfsClient = new HdfsClient();
+    public HdfsPublisher(HdfsConfig hdfsConfig) {
+        this.hdfsConfig = hdfsConfig;
+        this.hdfsClient = new HdfsClient(this.hdfsConfig.getAddress(), this.hdfsConfig.getFileName());
     }
 
     @Override
     public void publish(Event event, Callback callback) {
-        for (HdfsConfig config : configs) {
+        for (HdfsRule rule : hdfsConfig.getRules()) {
+            if (!testTableName(rule.getTable(), event.getTable())) {
+                continue;
+            }
             switch (event.getEventType()) {
                 case INSERT:
-                    this.hdfsClient.append(config, event);
+                    this.hdfsClient.append(hdfsConfig, rule, event);
                     break;
                 case DELETE:
-                    this.hdfsClient.delete(config, event);
+                    this.hdfsClient.delete(hdfsConfig, rule, event);
                     break;
                 case UPDATE:
-                    this.hdfsClient.update(config, event);
+                    this.hdfsClient.update(hdfsConfig, rule, event);
                     break;
                 default:
                     break;
@@ -59,5 +62,8 @@ public class HdfsPublisher extends BasePublisher implements IPublisher {
 
     }
 
+    private boolean testTableName(String tableFilter, String table) {
+        return Pattern.compile(tableFilter).matcher(table).matches();
+    }
 
 }
