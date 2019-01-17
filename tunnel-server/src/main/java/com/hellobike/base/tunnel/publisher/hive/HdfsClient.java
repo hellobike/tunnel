@@ -122,7 +122,7 @@ public class HdfsClient implements AutoCloseable {
 
     private boolean appendPartition(String dataDir, String partition) {
         String sql = String.format("ALTER TABLE %s ADD IF NOT EXISTS PARTITION (%s='%s') LOCATION '%s'",
-                this.hiveConfig.getTable(), this.hiveConfig.getPartition(), partition, dataDir + "/" + partition);
+                this.hiveConfig.getTable(), this.hiveConfig.getPartition(), partition, dataDir);
         try (Connection conn = this.dataSource.getConnection();
              Statement stmt = conn.createStatement()) {
             stmt.execute(sql);
