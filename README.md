@@ -11,7 +11,7 @@ Tunnel 是一个将postgresql的实时数据同步到es或kafka的服务
 
 ## 架构图
 
-![架构图](./doc/arch.png)
+![架构图](./doc/tunnel_arch.png)
 
 ## 原理
 
@@ -19,21 +19,21 @@ tunnel 利用pg内部的逻辑复制功能,通过在pg创建逻辑复制槽,接�
 
 ## 安装使用
 
-### 安装
+### 打包
 
 ```shell
-$git clone https://github.com/hellobike/tunnel
-$cd tunnel
-$mvn clean package -Dmaven.test.skip=true
-$cd target
-$unzip AppTunnelService.zip
-$cd AppTunnelService
+$ git clone https://github.com/hellobike/tunnel
+$ cd tunnel
+$ mvn clean package -Dmaven.test.skip=true
 ```
 
 ### 使用
 
 ```shell
-$java -server -classpath conf/*:lib/* com.hellobike.base.tunnel.TunnelLauncher -u false -c cfg.properties
+$ cd target
+$ unzip AppTunnelService.zip
+$ cd AppTunnelService
+$ java -server -classpath conf/*:lib/* com.hellobike.base.tunnel.TunnelLauncher -u false -c cfg.properties
 ```
 
 ## PG 配置
