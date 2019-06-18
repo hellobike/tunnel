@@ -44,7 +44,7 @@ PG数据库需要预先开启逻辑复制[pg配置](./doc/pg.md)
 
 ### 配置文件
 
-[tunnel配置](./doc/cfg.properties)
+[tunnel配置](./doc/tunnel.md)
 
 ### 监控
 

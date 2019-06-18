@@ -18,18 +18,24 @@ package com.hellobike.base.tunnel.config.file;
 import com.hellobike.base.tunnel.config.ConfigListener;
 import com.hellobike.base.tunnel.config.ConfigLoader;
 import com.hellobike.base.tunnel.utils.NamedThreadFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.nio.file.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author machunxiao create at 2018-12-26
  */
-public class FileConfigLoader implements ConfigLoader, AutoCloseable {
+public abstract class FileConfigLoader implements ConfigLoader, AutoCloseable {
+
+    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private File file;
 
@@ -44,23 +50,7 @@ public class FileConfigLoader implements ConfigLoader, AutoCloseable {
         addFileWatcher(this.file);
     }
 
-    private static Map<String, String> load(File file) {
-        Map<String, String> data = new LinkedHashMap<>();
-        try {
-            Properties prop = new Properties();
-            prop.load(new FileInputStream(file));
-            for (Map.Entry<Object, Object> e : prop.entrySet()) {
-                Object key = e.getKey();
-                Object value = e.getValue();
-                if (key != null) {
-                    data.put((String) key, (String) value);
-                }
-            }
-        } catch (Exception e) {
-
-        }
-        return data;
-    }
+    protected abstract Map<String, String> load(File file);
 
     @Override
     public String getProperty(String key, String defaultValue) {

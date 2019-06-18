@@ -19,6 +19,7 @@ package com.hellobike.base.tunnel;
 import com.alibaba.fastjson.JSON;
 import com.hellobike.base.tunnel.apollo.ApolloConfig;
 import com.hellobike.base.tunnel.config.*;
+import com.hellobike.base.tunnel.constants.Constants;
 import com.hellobike.base.tunnel.filter.TableNameFilter;
 import com.hellobike.base.tunnel.monitor.ExporterConfig;
 import com.hellobike.base.tunnel.monitor.TunnelExporter;
@@ -52,10 +53,6 @@ import java.util.stream.Collectors;
 public class TunnelLauncher {
 
     private static final Logger                         /**/ LOGGER         /**/ = LoggerFactory.getLogger(TunnelLauncher.class);
-    private static final String                         /**/ TUNNEL_KEY     /**/ = "tunnel_subscribe_config";
-    private static final String                         /**/ TUNNEL_ZK_KEY  /**/ = "tunnel_zookeeper_address";
-    private static final String                         /**/ CONFIG_PATH    /**/ = "conf/tunnel.properties";
-    private static final String                         /**/ APP_ID         /**/ = "AppTunnelService";
 
     private static final TunnelConfig                   /**/ TUNNEL_CONFIG  /**/ = new TunnelConfig();
 
@@ -67,14 +64,14 @@ public class TunnelLauncher {
 
         ConfigLoader config = ConfigLoaderFactory.getConfigLoader(TUNNEL_CONFIG);
 
-        String configValue = config.getProperty(TUNNEL_KEY, "");
+        String configValue = config.getProperty(Constants.TUNNEL_KEY, "");
         if ("".equals(configValue)) {
             LOGGER.warn("config is null at first setup");
             System.exit(0);
         }
 
         LOGGER.info("config value:{}", configValue);
-        String zkAddress = config.getProperty(TUNNEL_ZK_KEY, "");
+        String zkAddress = config.getProperty(Constants.TUNNEL_ZK_KEY, "");
         if ("".equals(zkAddress)) {
             LOGGER.warn("zk address is null");
             System.exit(0);
@@ -85,7 +82,7 @@ public class TunnelLauncher {
 
         startSubscribe(zkConfig, configValue);
         config.addChangeListener(((key, oldValue, newValue) -> {
-            if (!TUNNEL_KEY.equals(key)) {
+            if (!Constants.TUNNEL_KEY.equals(key)) {
                 return;
             }
             startSubscribe(zkConfig, newValue);
@@ -119,7 +116,7 @@ public class TunnelLauncher {
      */
     private static void initTunnelConfig(Map<String, String> cfg) {
         TUNNEL_CONFIG.setProcessId(getPid());
-        TUNNEL_CONFIG.setAppId(cfg.getOrDefault("-a", APP_ID));
+        TUNNEL_CONFIG.setAppId(cfg.getOrDefault("-a", Constants.APP_ID));
         TUNNEL_CONFIG.setMetaDomain(cfg.getOrDefault("-d", getMetaDomain()));
         TUNNEL_CONFIG.setUseApollo("true".equalsIgnoreCase(cfg.getOrDefault("-u", "true")));
         TUNNEL_CONFIG.setUseYukon("true".equalsIgnoreCase(cfg.getOrDefault("-y", "false")));
@@ -428,7 +425,7 @@ public class TunnelLauncher {
     }
 
     private static String getMetaDomain() {
-        InputStream is = FileUtils.load(CONFIG_PATH);
+        InputStream is = FileUtils.load(Constants.CONFIG_PATH);
         if (is == null) {
             return "";
         }
