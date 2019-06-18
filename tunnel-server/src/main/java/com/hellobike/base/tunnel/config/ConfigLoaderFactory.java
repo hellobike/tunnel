@@ -17,6 +17,8 @@ package com.hellobike.base.tunnel.config;
 
 import com.hellobike.base.tunnel.apollo.ApolloConfigLoader;
 import com.hellobike.base.tunnel.config.file.FileConfigLoader;
+import com.hellobike.base.tunnel.config.file.PropertiesFileConfigLoader;
+import com.hellobike.base.tunnel.config.file.YmlFileConfigLoader;
 
 /**
  * @author machunxiao create at 2018-12-27
@@ -30,7 +32,22 @@ public class ConfigLoaderFactory {
         if (tunnelConfig.isUseApollo()) {
             return new ApolloConfigLoader(tunnelConfig.getAppId(), tunnelConfig.getMetaDomain());
         }
-        return new FileConfigLoader(tunnelConfig.getConfigFile());
+        return getFileConfigLoader(tunnelConfig.getConfigFile());
+    }
+
+    private static FileConfigLoader getFileConfigLoader(String fileName){
+        String ext = "";
+        try {
+            ext = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+        } catch (StringIndexOutOfBoundsException e) {
+            // do nothing
+        }
+
+        switch (ext){
+            case "yml":
+            case "yaml": return new YmlFileConfigLoader(fileName);
+            default: return new PropertiesFileConfigLoader(fileName);
+        }
     }
 
 }

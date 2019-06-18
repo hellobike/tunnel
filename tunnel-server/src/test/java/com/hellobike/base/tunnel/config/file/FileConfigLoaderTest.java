@@ -31,9 +31,16 @@ public class FileConfigLoaderTest {
     private static final Logger log = LoggerFactory.getLogger(FileConfigLoaderTest.class);
 
     @Test
-    public void testFileConfigLoader() {
-        String file = "test_config.properties";
-        FileConfigLoader loader = new FileConfigLoader(getFilePath(file));
+    public void testPropertiesFileConfigLoader() {
+        testFileConfigLoader(new PropertiesFileConfigLoader(getFilePath("test_config.properties")));
+    }
+
+    @Test
+    public void testYamlFileConfigLoader() {
+        testFileConfigLoader(new PropertiesFileConfigLoader(getFilePath("test_config.yml")));
+    }
+
+    private void testFileConfigLoader(FileConfigLoader loader) {
         loader.addChangeListener((key, oldValue, newValue) -> log.info("key:{},old:{},new:{}", key, oldValue, newValue));
         try {
             Thread.currentThread().join(1000 * 60 * 10);

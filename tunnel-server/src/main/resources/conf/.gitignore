@@ -1,1 +1,3 @@
 *.properties
+*.yml
+*.yaml
