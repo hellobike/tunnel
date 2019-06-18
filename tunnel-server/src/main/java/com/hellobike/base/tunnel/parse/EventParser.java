@@ -100,10 +100,6 @@ public class EventParser implements IEventParser {
             String value = parseValue(lexer);
 
 
-            // 去除多余的符号 "'"
-            if (value.length() > 0 && value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'') {
-                value = value.substring(1, value.length() - 1);
-            }
             data.setName(name);
             data.setDataType(type);
             data.setValue(value);
@@ -128,7 +124,7 @@ public class EventParser implements IEventParser {
     private String parseValue(Lexer lexer) {
         if (lexer.current() == '\'') {
             lexer.skip(1);
-            lexer.nextToken('\'');
+            lexer.nextTokenToQuote();
             return lexer.token();
         }
         lexer.nextToken(' ');
@@ -161,6 +157,23 @@ public class EventParser implements IEventParser {
             if (pos < length) {
                 StringBuilder out = new StringBuilder(16);
                 while (pos < length && array[pos] != comma) {
+                    out.append(array[pos]);
+                    pos++;
+                }
+                pos++;
+                return token = out.toString();
+            }
+            return token = null;
+        }
+
+        public String nextTokenToQuote() {
+            if (pos < length) {
+                int commaCount = 1;
+                StringBuilder out = new StringBuilder(16);
+                while (!((pos == length - 1 || (array[pos + 1] == ' ' && commaCount % 2 == 1)) && array[pos] == '\'')) {
+                    if(array[pos] == '\'') {
+                        commaCount++;
+                    }
                     out.append(array[pos]);
                     pos++;
                 }

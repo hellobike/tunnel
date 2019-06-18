@@ -20,6 +20,8 @@ import com.hellobike.base.tunnel.store.MemStore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * @author machunxiao 2018-11-07
  */
@@ -56,6 +58,50 @@ public class EventParserTest {
         ctx.setMessage(msg);
         parser.parse(ctx);
 
+        msg = "table public.test: UPDATE: id[bigint]:2121 update_on[timestamp without time zone]:'2019-06-18 16:09:23.656' name[character varying]:'' email[character varying]:null";
+        ctx.setMessage(msg);
+        parser.parse(ctx);
+        assertEquals("", ctx.getEvent().getDataList().get(2).getValue());
+
+        msg = "table public.test: UPDATE: id[bigint]:2121 update_on[timestamp without time zone]:'2019-06-18 16:09:23.656' email[character varying]:null name[character varying]:''";
+        ctx.setMessage(msg);
+        parser.parse(ctx);
+        assertEquals("", ctx.getEvent().getDataList().get(3).getValue());
+
+        msg = "table public.test: UPDATE: id[bigint]:2121 update_on[timestamp without time zone]:'2019-06-18 16:09:23.656' email[character varying]:null name[character varying]:'''test_name'";
+        ctx.setMessage(msg);
+        parser.parse(ctx);
+        assertEquals("''test_name", ctx.getEvent().getDataList().get(3).getValue());
+
+        msg = "table public.test: UPDATE: id[bigint]:2121 update_on[timestamp without time zone]:'2019-06-18 16:09:23.656' email[character varying]:null name[character varying]:'test_''name'";
+        ctx.setMessage(msg);
+        parser.parse(ctx);
+        assertEquals("test_''name", ctx.getEvent().getDataList().get(3).getValue());
+
+        msg = "table public.test: UPDATE: id[bigint]:2121 update_on[timestamp without time zone]:'2019-06-18 16:09:23.656' email[character varying]:null name[character varying]:'test_name'''";
+        ctx.setMessage(msg);
+        parser.parse(ctx);
+        assertEquals("test_name''", ctx.getEvent().getDataList().get(3).getValue());
+
+        msg = "table public.test: UPDATE: id[bigint]:2121 update_on[timestamp without time zone]:'2019-06-18 16:09:23.656' email[character varying]:null name[character varying]:'''test_name'''";
+        ctx.setMessage(msg);
+        parser.parse(ctx);
+        assertEquals("''test_name''", ctx.getEvent().getDataList().get(3).getValue());
+
+        msg = "table public.test: UPDATE: id[bigint]:2121 update_on[timestamp without time zone]:'2019-06-18 16:09:23.656' email[character varying]:null name[character varying]:'''test''_name'''";
+        ctx.setMessage(msg);
+        parser.parse(ctx);
+        assertEquals("''test''_name''", ctx.getEvent().getDataList().get(3).getValue());
+
+        msg = "table public.test: UPDATE: id[bigint]:2121 update_on[timestamp without time zone]:'2019-06-18 16:09:23.656' email[character varying]:null name[character varying]:'''test'' _name'''";
+        ctx.setMessage(msg);
+        parser.parse(ctx);
+        assertEquals("''test'' _name''", ctx.getEvent().getDataList().get(3).getValue());
+
+        msg = "table public.test: INSERT: id[bigint]:2121 update_on[timestamp without time zone]:'2019-06-18 16:09:23.656' email[character varying]:null created_on[timestamp without time zone]:'2019-05-29 13:59:43.930871'";
+        ctx.setMessage(msg);
+        parser.parse(ctx);
+        assertEquals("2019-05-29 13:59:43.930871", ctx.getEvent().getDataList().get(3).getValue());
     }
 
 }
