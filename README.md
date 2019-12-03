@@ -1,5 +1,6 @@
 PG数据同步工具（Java实现）
 [![CircleCI](https://circleci.com/gh/hellobike/tunnel.svg?style=svg)](https://circleci.com/gh/hellobike/tunnel)
+[![Actions Status](https://github.com/hellobike/tunnel/workflows/Java%20CI/badge.svg)](https://github.com/hellobike/tunnel/actions)
 
 Tunnel 是一个将postgresql的实时数据同步到es或kafka的服务
 
