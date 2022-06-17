@@ -110,7 +110,7 @@
         <es.version>6.4.2</es.version>
         <apollo.version>1.2.0</apollo.version>
         <junit.version>4.12</junit.version>
-        <fastjson.version>1.2.51</fastjson.version>
+        <fastjson.version>1.2.83</fastjson.version>
         <commons-lang3.version>3.8.1</commons-lang3.version>
         <curator.version>2.12.0</curator.version>
         <slf4j.version>1.7.25</slf4j.version>
